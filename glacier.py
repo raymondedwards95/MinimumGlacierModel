@@ -160,3 +160,58 @@ class LinearBedModel(MinimumGlacierModel):
     def mean_slope(self):
         return self.s
 
+
+class ConcaveBedModel(MinimumGlacierModel):
+    """ Minimum glacier model for a concave bed """
+
+    def __init__(self, b0=3900., ba=-100., xl=7000., calving=True, alpha=3., beta=0.007, nu=10.):
+        self.b0 = b0
+        self.ba = ba
+        self.xl = xl
+
+        self.alpha = alpha
+        self.beta = beta
+        self.nu = nu
+        self.W = 1.  # meters
+
+        self.L_last = 1.  # meters # initial value
+        self.t_last = 0.  # years
+
+        self.L = np.array([self.L_last], dtype=np.float)
+        self.t = np.array([self.t_last], dtype=np.float)
+
+        self.calving = calving
+        self.rho_water = 1000.
+        self.rho_ice = 917.
+        self.c = 1.
+        self.kappa = 1/200.
+
+        self.E = 2900.
+        self.E_data = np.array([self.E], dtype=np.float)
+
+        self.x = np.linspace(0, 1e5, 101)
+        self.y = self.bed(self.x)
+
+
+    def __str__(self):
+        return "Minimum Glacier Model for a concave bed."
+
+
+    def bed(self, x):
+        return self.ba + self.b0 * np.exp(-x/self.xl)
+
+
+    def mean_bed(self):
+        return self.ba + self.xl * self.b0 / self.L_last * (1 - np.exp(-self.L_last/self.xl))
+
+
+    def slope_gradient(self, x):
+        dsdl_1 = -self.b0 * (1 - np.exp(-x/self.xl)) / np.power(x, 2.)
+        dsdl_2 = self.b0 * np.exp(-x/self.xl) / self.xl / x
+        return dsdl_1 + dsdl_2
+
+
+    def mean_slope(self):
+        return self.b0 * (1 - np.exp(-self.L_last/self.xl)) / self.L_last
+
+
