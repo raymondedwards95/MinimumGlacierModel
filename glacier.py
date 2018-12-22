@@ -355,11 +355,17 @@ class CustomBedModel(MinimumGlacierModel):
         return np.sum(slopes) / (np.max(x_list) - np.min(x_list))
 
 
-    def d_slope_d_L(self, L=None):
+    def d_slope_d_L(self, L=None, dL=10.):
+        ### Method: central finite differences with second-order accuracy
         if L is None:
             L = self.L_last
-        # TODO
-        return 0
+        if L < dL:
+            # fix for left border
+            dL = 0.9*L
+        [a, b] = [L-dL, L+dL]
+        A = self.mean_slope(a)
+        B = self.mean_slope(b)
+        return (-A/2 + B/2) / dL
 
 
 
