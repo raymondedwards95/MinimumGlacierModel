@@ -316,7 +316,6 @@ class CustomBedModel(MinimumGlacierModel):
 
 
     def mean_bed(self, x=None):
-        ### NOTE: this may be not the best way to calculate the mean bed elevation
         if x is None:
             x = self.L_last
         # find all indices where x_bed < argument x
@@ -335,11 +334,10 @@ class CustomBedModel(MinimumGlacierModel):
 
 
     def slope(self, x):
-        return -1. * np.interp(x, self.x, np.gradient(self.y))
+        return -1. * np.interp(x, self.x, np.gradient(self.y, self.x))
 
 
     def mean_slope(self, x=None):
-        ### NOTE: this is possibly not the best way to calculate the mean bed slope
         if x is None:
             x = self.L_last
         # find all indices where x_bed < argument x
