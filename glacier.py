@@ -24,16 +24,16 @@ class MinimumGlacierModel():
         self.E = 2900.
         self.E_data = np.array([self.E], dtype=np.float)
 
-        self.x = x
-        self.y = -self.x + np.max(self.x)
+        self.x = np.linspace(0, 1e5)
+        self.y = -self.x + np.max(self.x)/2
 
 
     def __str__(self):
-        return "Minimum Glacier Model for a non-standard bed."
+        return "Base class for a minimum Glacier Model."
 
 
     def bed(self, x):
-        return np.interp(x, self.x, self.y)
+        return 0
 
 
     def mean_bed(self, x=None):
@@ -43,7 +43,7 @@ class MinimumGlacierModel():
 
 
     def slope(self, x):
-        return -1
+        return 0
 
 
     def mean_slope(self, x=None):
@@ -165,7 +165,7 @@ class LinearBedModel(MinimumGlacierModel):
         self.rho_water = 1000.
         self.rho_ice = 917.
         self.c = 1.
-        self.kappa = 1/20.
+        self.kappa = 1/200.
 
         self.E = 2900.
         self.E_data = np.array([self.E], dtype=np.float)
