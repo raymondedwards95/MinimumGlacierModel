@@ -5,15 +5,16 @@ __all__ = ["LinearBedModel", "ConcaveBedModel", "CustomBedModel"]
 
 class MinimumGlacierModel():
     """ Base class for minimum glacier models """
-    def __init__(self, calving=True):
+
+    def __init__(self, calving=True, L0=1., t0=0.):
         # should not use this object to create a glacier
         self.alpha = 3.
         self.beta = 0.007
         self.nu = 10.
         self.W = 1. # meters
 
-        self.L_last = 1.  # meters # initial value
-        self.t_last = 0.  # years
+        self.L_last = L0  # meters # initial value
+        self.t_last = t0  # years
 
         self.L = np.array([self.L_last], dtype=np.float)
         self.t = np.array([self.t_last], dtype=np.float)
@@ -27,8 +28,8 @@ class MinimumGlacierModel():
         self.E = 2900.
         self.E_data = np.array([self.E], dtype=np.float)
 
-        self.x = np.linspace(0, 1e5)
-        self.y = -self.x + np.max(self.x)/2
+        self.x = np.linspace(0., 1e5)
+        self.y = -1.*self.x + np.max(self.x)/2.
 
 
     def __str__(self):
@@ -36,40 +37,40 @@ class MinimumGlacierModel():
 
 
     def bed(self, x):
-        return 0
+        return 0.
 
 
     def mean_bed(self, x=None):
         if x is None:
             x = self.L_last
-        return 0
+        return 0.
 
 
     def slope(self, x):
-        return 0
+        return 0.
 
 
     def mean_slope(self, x=None):
         if x is None:
             x = self.L_last
-        return 0
+        return 0.
 
 
     def d_slope_d_L(self, L=None):
         if L is None:
             L = self.L_last
-        return 0
+        return 0.
 
 
     def mean_ice_thickness(self):
         """ Calculates the mean ice thickness Hm (eq 1.2.2) """
         s_mean = self.mean_slope(x=self.L_last)
-        return self.alpha / (1+self.nu*s_mean) * np.power(self.L_last, 1/2.)
+        return self.alpha / (1.+self.nu*s_mean) * np.power(self.L_last, 1./2.)
 
 
     def water_depth(self):
         """ Determine the water depth at the end of the glacier by comparing the height of the bed with zero """
-        return -1. * np.min([0, self.bed(self.L_last)])
+        return -1. * np.min([0., self.bed(self.L_last)])
 
 
     def calving_flux(self):
@@ -94,8 +95,8 @@ class MinimumGlacierModel():
             F = self.calving_flux()
         else:
             F = 0.
-        dldt_1 = 3. * self.alpha / (2*(1+self.nu*s_mean)) * np.power(self.L_last, 1/2.)
-        dldt_2 = - self.alpha * self.nu / np.power(1+self.nu*s_mean, 2.) * np.power(self.L_last, 3/2.) * ds
+        dldt_1 = 3. * self.alpha / (2*(1+self.nu*s_mean)) * np.power(self.L_last, 1./2.)
+        dldt_2 = - self.alpha * self.nu / np.power(1+self.nu*s_mean, 2.) * np.power(self.L_last, 3./2.) * ds
         dldt_3 = Bs + F
         return np.power(dldt_1 + dldt_2, -1.) * dldt_3
 
@@ -149,7 +150,8 @@ class MinimumGlacierModel():
 
 class LinearBedModel(MinimumGlacierModel):
     """ Minimum glacier model for a linear bed """
-    def __init__(self, b0=3900, s=0.1, calving=True):
+
+    def __init__(self, b0=3900., s=0.1, calving=True, L0=1., t0=0.):
         self.b0 = b0
         self.s = s
 
@@ -158,8 +160,8 @@ class LinearBedModel(MinimumGlacierModel):
         self.nu = 10.
         self.W = 1. # meters
 
-        self.L_last = 1.  # meters # initial value
-        self.t_last = 0.  # years
+        self.L_last = L0  # meters # initial value
+        self.t_last = t0  # years
 
         self.L = np.array([self.L_last], dtype=np.float)
         self.t = np.array([self.t_last], dtype=np.float)
@@ -168,12 +170,12 @@ class LinearBedModel(MinimumGlacierModel):
         self.rho_water = 1000.
         self.rho_ice = 917.
         self.c = 1.
-        self.kappa = 1/200.
+        self.kappa = 1./200.
 
         self.E = 2900.
         self.E_data = np.array([self.E], dtype=np.float)
 
-        self.x = np.linspace(0, 1e5, 101)
+        self.x = np.linspace(0., 1e5, 101)
         self.y = self.bed(self.x)
 
 
@@ -188,7 +190,7 @@ class LinearBedModel(MinimumGlacierModel):
     def mean_bed(self, x=None):
         if x is None:
             x = self.L_last
-        return self.b0 - self.s * x / 2
+        return self.b0 - self.s * x / 2.
 
 
     def slope(self, x):
@@ -210,7 +212,7 @@ class LinearBedModel(MinimumGlacierModel):
 class ConcaveBedModel(MinimumGlacierModel):
     """ Minimum glacier model for a concave bed """
 
-    def __init__(self, b0=3900., ba=-100., xl=7000., calving=True):
+    def __init__(self, b0=3900., ba=-100., xl=7000., calving=True, L0=1., t0=0.):
         self.b0 = b0
         self.ba = ba
         self.xl = xl
@@ -220,8 +222,8 @@ class ConcaveBedModel(MinimumGlacierModel):
         self.nu = 10.
         self.W = 1. # meters
 
-        self.L_last = 1.  # meters # initial value
-        self.t_last = 0.  # years
+        self.L_last = L0  # meters # initial value
+        self.t_last = t0  # years
 
         self.L = np.array([self.L_last], dtype=np.float)
         self.t = np.array([self.t_last], dtype=np.float)
@@ -235,7 +237,7 @@ class ConcaveBedModel(MinimumGlacierModel):
         self.E = 2900.
         self.E_data = np.array([self.E], dtype=np.float)
 
-        self.x = np.linspace(0, 1e5, 101)
+        self.x = np.linspace(0., 1e5, 101)
         self.y = self.bed(self.x)
 
 
@@ -250,44 +252,44 @@ class ConcaveBedModel(MinimumGlacierModel):
     def mean_bed(self, x=None):
         if x is None:
             x = self.L_last
-        if np.isclose(x, 0):             
-            return 0
-        return self.ba + self.xl * self.b0 / x * (1 - np.exp(-x/self.xl))
+        if np.isclose(x, 0.):             
+            return 0.
+        return self.ba + self.xl * self.b0 / x * (1. - np.exp(-1.*x/self.xl))
 
     
     def slope(self, x):
-        return self.b0 / self.xl * np.exp(-x / self.xl)
+        return self.b0 / self.xl * np.exp(-1.*x / self.xl)
 
 
     def mean_slope(self, x=None):
         if x is None:
             x = self.L_last
-        if np.isclose(x, 0):             
-            return 0
-        return self.b0 * (1 - np.exp(-x/self.xl)) / x
+        if np.isclose(x, 0.):             
+            return 0.
+        return self.b0 * (1. - np.exp(-1.*x/self.xl)) / x
 
 
     def d_slope_d_L(self, L=None):
         if L is None:
             L = self.L_last
-        if np.isclose(L, 0):             
-            return 0
-        dsdl_1 = -self.b0 * (1 - np.exp(-L/self.xl)) / np.power(L, 2.)
-        dsdl_2 = self.b0 * np.exp(-L/self.xl) / self.xl / L
+        if np.isclose(L, 0.):             
+            return 0.
+        dsdl_1 = -self.b0 * (1. - np.exp(-1.*L/self.xl)) / np.power(L, 2.)
+        dsdl_2 = self.b0 * np.exp(-1.*L/self.xl) / self.xl / L
         return dsdl_1 + dsdl_2
 
 
 class CustomBedModel(MinimumGlacierModel):
     """ Minimum glacier model for a custom bed """
 
-    def __init__(self, x, y, calving=True):
+    def __init__(self, x, y, calving=True, L0=1., t0=0.):
         self.alpha = 3.
         self.beta = 0.007
         self.nu = 10.
         self.W = 1. # meters
 
-        self.L_last = 1.  # meters # initial value
-        self.t_last = 0.  # years
+        self.L_last = L0  # meters # initial value
+        self.t_last = t0  # years
 
         self.L = np.array([self.L_last], dtype=np.float)
         self.t = np.array([self.t_last], dtype=np.float)
@@ -333,7 +335,7 @@ class CustomBedModel(MinimumGlacierModel):
 
 
     def slope(self, x):
-        return -1 * np.interp(x, self.x, np.gradient(self.y))
+        return -1. * np.interp(x, self.x, np.gradient(self.y))
 
 
     def mean_slope(self, x=None):
@@ -365,7 +367,7 @@ class CustomBedModel(MinimumGlacierModel):
         [a, b] = [L-dL, L+dL]
         A = self.mean_slope(a)
         B = self.mean_slope(b)
-        return (-A/2 + B/2) / dL
+        return (-1.*A/2. + B/2.) / dL
 
 
 
