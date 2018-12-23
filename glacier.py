@@ -35,62 +35,62 @@ class MinimumGlacierModel():
     def __str__(self):
         return "Base class for a minimum Glacier Model."
 
-
     def bed(self, x):
+        """ Returns the elevation of the bed at point x """
         return 0.
-
 
     def mean_bed(self, x=None):
+        """ Returns the mean elevation of the bed from 0 to x """
         if x is None:
             x = self.L_last
         return 0.
-
 
     def slope(self, x):
+        """ Returns the slope of the bed at point x """
         return 0.
 
-
     def mean_slope(self, x=None):
+        """ Returns the mean slope of the bed from 0 to x """
         if x is None:
             x = self.L_last
         return 0.
 
-
     def d_slope_d_L(self, L=None):
+        """ Returns the change of the mean slope if the value of L changes """
         if L is None:
             L = self.L_last
         return 0.
 
-
     def mean_ice_thickness(self):
-        """ Calculates the mean ice thickness Hm (eq 1.2.2) """
+        """ Calculates the mean ice thickness Hm with equation 1.2.2 """
         s_mean = self.mean_slope(x=self.L_last)
         return self.alpha / (1.+self.nu*s_mean) * np.power(self.L_last, 1./2.)
 
-
-    def water_depth(self):
-        """ Determine the water depth at the end of the glacier by comparing the height of the bed with zero """
-        return -1. * np.min([0., self.bed(self.L_last)])
-
+    def water_depth(self, x=None):
+        """ Determines the water depth at x by checking if the elevation of the bed is negative """
+        if x is None:
+            x = self.L_last
+        return -1. * np.min([0., self.bed(x)])
 
     def calving_flux(self):
+        """ Calculates the calving flux using equations 1.5.1, 1.5.2 and 1.5.3 """
         d = self.water_depth()
         H_mean = self.mean_ice_thickness()
         Hf = np.max([self.kappa * H_mean, self.rho_water / self.rho_ice * d])
         F = -self.c * d * Hf * self.W
         return F
 
-
-    def mean_balance(self):
+    def mass_balance(self):
+        """ Returns the mass balance from equation 1.3.0 """
         b_mean = self.mean_bed()
         H_mean = self.mean_ice_thickness()
         return self.beta * (b_mean + H_mean - self.E) * self.W * self.L_last
 
-
     def change_L(self):
+        """ Determines dL/dt from equation 1.2.5 """
         s_mean = self.mean_slope(x=self.L_last)
         ds = self.d_slope_d_L(self.L_last)
-        Bs = self.mean_balance()
+        Bs = self.mass_balance()
         if self.calving:
             F = self.calving_flux()
         else:
@@ -100,12 +100,16 @@ class MinimumGlacierModel():
         dldt_3 = Bs + F
         return np.power(dldt_1 + dldt_2, -1.) * dldt_3
 
-
     def integrate(self, dt, time, E=None, E_new=None, show=False):
+        """ Function to integrate in time using a forward Euler scheme """
         if E is None:
             E = self.E
         else:
             self.E = E
+
+        if dt > time:
+            dt, time = time, dt
+            print("Switching dt and time, so dt={} and time={}".format(dt, time))
 
         i_max = np.int(np.round(time/dt))
 
@@ -178,32 +182,31 @@ class LinearBedModel(MinimumGlacierModel):
         self.x = np.linspace(0., 1e5, 101)
         self.y = self.bed(self.x)
 
-
     def __str__(self):
         return "Minimum Glacier Model for a linear bed."
 
-
     def bed(self, x):
+        """ Returns the elevation of the bed at point x """
         return self.b0 - self.s * x
 
-
     def mean_bed(self, x=None):
+        """ Returns the mean elevation of the bed from 0 to x """
         if x is None:
             x = self.L_last
         return self.b0 - self.s * x / 2.
 
-
     def slope(self, x):
+        """ Returns the slope of the bed at point x """
         return self.s
 
-
     def mean_slope(self, x=None):
+        """ Returns the mean slope of the bed from 0 to x """
         if x is None:
             x = self.L_last
         return self.s
 
-
     def d_slope_d_L(self, L=None):
+        """ Returns the change of the mean slope if the value of L changes """
         if L is None:
             L = self.L_last
         return 0.
@@ -240,36 +243,35 @@ class ConcaveBedModel(MinimumGlacierModel):
         self.x = np.linspace(0., 1e5, 101)
         self.y = self.bed(self.x)
 
-
     def __str__(self):
         return "Minimum Glacier Model for a concave bed."
 
-
     def bed(self, x):
+        """ Returns the elevation of the bed at point x """
         return self.ba + self.b0 * np.exp(-x/self.xl)
 
-
     def mean_bed(self, x=None):
+        """ Returns the mean elevation of the bed from 0 to x """
         if x is None:
             x = self.L_last
         if np.isclose(x, 0.):             
             return 0.
         return self.ba + self.xl * self.b0 / x * (1. - np.exp(-1.*x/self.xl))
 
-    
     def slope(self, x):
+        """ Returns the slope of the bed at point x """
         return self.b0 / self.xl * np.exp(-1.*x / self.xl)
 
-
     def mean_slope(self, x=None):
+        """ Returns the mean slope of the bed from 0 to x """
         if x is None:
             x = self.L_last
         if np.isclose(x, 0.):             
             return 0.
         return self.b0 * (1. - np.exp(-1.*x/self.xl)) / x
 
-
     def d_slope_d_L(self, L=None):
+        """ Returns the change of the mean slope if the value of L changes """
         if L is None:
             L = self.L_last
         if np.isclose(L, 0.):             
@@ -310,12 +312,12 @@ class CustomBedModel(MinimumGlacierModel):
     def __str__(self):
         return "Minimum Glacier Model for a custom bed."
 
-
     def bed(self, x):
+        """ Returns the elevation of the bed at point x """
         return np.interp(x, self.x, self.y)
 
-
     def mean_bed(self, x=None):
+        """ Returns the mean elevation of the bed from 0 to x """
         if x is None:
             x = self.L_last
         # find all indices where x_bed < argument x
@@ -332,12 +334,12 @@ class CustomBedModel(MinimumGlacierModel):
         # return mean elevation
         return np.sum(elevation) / (np.max(x_list) - np.min(x_list))
 
-
     def slope(self, x):
+        """ Returns the slope of the bed at point x """
         return -1. * np.interp(x, self.x, np.gradient(self.y, self.x))
 
-
     def mean_slope(self, x=None):
+        """ Returns the mean slope of the bed from 0 to x """
         if x is None:
             x = self.L_last
         # find all indices where x_bed < argument x
@@ -354,8 +356,8 @@ class CustomBedModel(MinimumGlacierModel):
         # return mean slope
         return np.sum(slopes) / (np.max(x_list) - np.min(x_list))
 
-
     def d_slope_d_L(self, L=None, dL=10.):
+        """ Returns the change of the mean slope if the value of L changes """
         ### Method: central finite differences with second-order accuracy
         if L is None:
             L = self.L_last
