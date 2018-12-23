@@ -307,7 +307,9 @@ class CustomBedModel(MinimumGlacierModel):
 
         self.x = np.array(x, dtype=np.float)
         self.y = np.array(y, dtype=np.float)
-
+        self.s = self.slope(self.x)
+        self.mb = self.mean_bed_init()
+        self.ms = self.mean_slope_init()
 
     def __str__(self):
         return "Minimum Glacier Model for a custom bed."
@@ -316,45 +318,51 @@ class CustomBedModel(MinimumGlacierModel):
         """ Returns the elevation of the bed at point x """
         return np.interp(x, self.x, self.y)
 
+    def mean_bed_init(self):
+        """ Returns the mean elevation of the bed from 0 to x for all x in self.x """
+        # calculate distance between two points
+        delta_x = self.x[1:] - self.x[:-1]
+        # calculate y at midpoint
+        y_midpoint = (self.y[1:] + self.y[:-1])/2.
+        # calculate integrated elevation per delta_x
+        total_elevation = delta_x * y_midpoint
+        # calculate mean elevation
+        means = np.zeros(np.size(self.x), dtype=np.float)
+        means[0] = self.bed(self.x[0])
+        for i in range(1, np.size(means)):
+            means[i] = np.sum(total_elevation[:i]) / (np.max(self.x[:i+1]) - np.min(self.x[:i+1]))
+        return means
+
     def mean_bed(self, x=None):
         """ Returns the mean elevation of the bed from 0 to x """
         if x is None:
             x = self.L_last
-        # find all indices where x_bed < argument x
-        indices = np.where(self.x < x)[0]
-        # create a list of x and y for x <= argument x
-        x_list = np.append(self.x[indices], x)
-        y_list = np.append(self.y[indices], self.bed(x))
-        # calculate distance between two points
-        delta_x = x_list[1:] - x_list[:-1]
-        # calculate y at midpoint
-        y_midpoint = (y_list[1:] + y_list[:-1])/2.
-        # calculate integrated elevation per delta_x
-        elevation = delta_x * y_midpoint
-        # return mean elevation
-        return np.sum(elevation) / (np.max(x_list) - np.min(x_list))
+        return np.interp(x, self.x, self.mb)
 
     def slope(self, x):
         """ Returns the slope of the bed at point x """
         return -1. * np.interp(x, self.x, np.gradient(self.y, self.x))
 
+    def mean_slope_init(self):
+        """ Returns the mean slope of the bed from 0 to x for all x in self.x """
+        # calculate distance between two points
+        delta_x = self.x[1:] - self.x[:-1]
+        # calculate y at midpoint
+        y_midpoint = (self.s[1:] + self.s[:-1])/2.
+        # calculate integrated slope per delta_x
+        total_slopes = delta_x * y_midpoint
+        # calculate mean slope
+        means = np.zeros(np.size(self.x), dtype=np.float)
+        means[0] = self.slope(self.x[0])
+        for i in range(1, np.size(means)):
+            means[i] = np.sum(total_slopes[:i]) / (np.max(self.x[:i+1]) - np.min(self.x[:i+1]))
+        return means
+
     def mean_slope(self, x=None):
         """ Returns the mean slope of the bed from 0 to x """
         if x is None:
             x = self.L_last
-        # find all indices where x_bed < argument x
-        indices = np.where(self.x < x)[0]
-        # create a list of x and y for x <= argument x
-        x_list = np.append(self.x[indices], x)
-        y_list = np.array([self.slope(xi) for xi in x_list])
-        # calculate distance between two points
-        delta_x = x_list[1:] - x_list[:-1]
-        # calculate y at midpoint
-        y_midpoint = (y_list[1:] + y_list[:-1])/2.
-        # calculate integrated slope per delta_x
-        slopes = delta_x * y_midpoint
-        # return mean slope
-        return np.sum(slopes) / (np.max(x_list) - np.min(x_list))
+        return np.interp(x, self.x, self.ms)
 
     def d_slope_d_L(self, L=None, dL=10.):
         """ Returns the change of the mean slope if the value of L changes """
