@@ -255,7 +255,7 @@ class ConcaveBedModel(MinimumGlacierModel):
         if x is None:
             x = self.L_last
         if np.isclose(x, 0.):             
-            return 0.
+            return self.bed(x)
         return self.ba + self.xl * self.b0 / x * (1. - np.exp(-1.*x/self.xl))
 
     def slope(self, x):
@@ -267,7 +267,7 @@ class ConcaveBedModel(MinimumGlacierModel):
         if x is None:
             x = self.L_last
         if np.isclose(x, 0.):             
-            return 0.
+            return self.slope(x)
         return self.b0 * (1. - np.exp(-1.*x/self.xl)) / x
 
     def d_slope_d_L(self, L=None):
