@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import numpy as np
 
 __all__ = ["LinearBedModel", "ConcaveBedModel", "CustomBedModel"]
@@ -161,6 +162,80 @@ class MinimumGlacierModel():
         else:
             self.E_data = np.append(self.E_data, np.array([self.E]*i_max))
 
+
+    def plot(self, E=False, C=False, V=False, show=True, filename=None):
+        """ Create a figure with glacier length and other data """
+        p = 1 # count number of subplots
+        c = 0 # current count
+        if E is True:
+            p += 1
+        if C is True:
+            p += 1
+        if V is True:
+            p += 1
+        
+        # create figure
+        fig = plt.figure()
+        # fig.set_title("Glacier length")
+        fig.set_size_inches(10, 4*p)
+        # fig.set_dpi(300)
+        fig.set_tight_layout(True)
+
+        subplots = []
+
+        # length
+        c += 1
+        print("L: {}/{}".format(c, p))
+        sub1 = plt.subplot(p, 1, c)
+        subplots.append(sub1)
+        sub1.plot(self.t, self.L)
+        if c == p: 
+            sub1.set_xlabel("Time [y]")
+        sub1.set_ylabel("Length [m]")
+        sub1.grid()
+
+        if E is True:
+            c += 1
+            print("E: {}/{}".format(c, p))
+            sub_E = plt.subplot(p, 1, c)
+            subplots.append(sub_E)
+            sub_E.plot(self.t, self.E_data, label="E")
+            sub_E.plot(self.t, np.max(self.y)*np.ones(np.size(self.t)), label="Top of mountain")
+            sub_E.plot(self.t, self.bed(self.L), label="End of glacier")
+            if c == p:
+                sub_E.set_xlabel("Time [y]")
+            sub_E.set_ylabel("Height [m]")
+            sub_E.grid()
+            sub_E.legend()
+
+        if C is True:
+            c += 1
+            print("C: {}/{}".format(c, p))
+            sub_C = plt.subplot(p, 1, c)
+            subplots.append(sub_C)
+            sub_C.plot(self.t, [self.calving_flux(Li) for Li in self.L])
+            if c == p:
+                sub_C.set_xlabel("Time [y]")
+            sub_C.set_ylabel("Calving Flux []")
+            sub_C.grid()
+
+        if V is True:
+            c += 1
+            print("V: {}/{}".format(c, p))
+            sub_V = plt.subplot(p, 1, c)
+            subplots.append(sub_V)
+            sub_V.plot(self.t, [self.mean_ice_thickness(Li) * Li for Li in self.L])
+            if c == p:
+                sub_V.set_xlabel("Time [y]")
+            sub_V.set_ylabel("Ice volume [m$^3$]")
+            sub_V.grid()
+
+
+        if filename is not None:
+            plt.savefig(filename)
+
+        if show:
+            plt.show()
 
 
 class LinearBedModel(MinimumGlacierModel):
@@ -391,16 +466,17 @@ class CustomBedModel(MinimumGlacierModel):
 
 
 if __name__ == "__main__":
-    import matplotlib.pyplot as plt
 
     glacier_l = LinearBedModel()
-    glacier_l.integrate(0.1, 500.)
+    glacier_l.integrate(0.1, 400., E=900)
+    glacier_l.integrate(0.1, 400., E=800)
+    glacier_l.integrate(0.1, 400., E=700)
+    glacier_l.plot(E=True, C=True, V=True, show=False, filename=None)
 
-    plt.figure()
-    plt.title("Linear bed glacier length")
-    plt.plot(glacier_l.t, glacier_l.L)
-    plt.grid()
-    plt.xlabel("time [years]")
-    plt.ylabel("length [m]")
-    plt.tight_layout()
+    glacier_c = ConcaveBedModel()
+    glacier_c.integrate(0.1, 400., E=1200)
+    glacier_c.integrate(0.1, 400., E=1100)
+    glacier_c.integrate(0.1, 400., E=1000)
+    glacier_c.plot(E=True, C=True, V=True, show=False, filename=None)
+
     plt.show()
