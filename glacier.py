@@ -165,6 +165,8 @@ class MinimumGlacierModel():
 
     def plot(self, E=False, C=False, V=False, show=True, filename=None):
         """ Create a figure with glacier length and other data """
+        if show:
+            print("Creating plot:")
         p = 1 # count number of subplots
         c = 0 # current count
         if E is True:
@@ -185,7 +187,8 @@ class MinimumGlacierModel():
 
         # length
         c += 1
-        print("L: {}/{}".format(c, p))
+        if show:
+            print("L: {}/{}".format(c, p))
         sub1 = plt.subplot(p, 1, c)
         subplots.append(sub1)
         sub1.plot(self.t, self.L)
@@ -196,10 +199,11 @@ class MinimumGlacierModel():
 
         if E is True:
             c += 1
-            print("E: {}/{}".format(c, p))
+            if show:
+                print("E: {}/{}".format(c, p))
             sub_E = plt.subplot(p, 1, c)
             subplots.append(sub_E)
-            sub_E.plot(self.t, self.E_data, label="E")
+            sub_E.plot(self.t, self.E_data, "--", label="E")
             sub_E.plot(self.t, np.max(self.y)*np.ones(np.size(self.t)), label="Top of mountain")
             sub_E.plot(self.t, self.bed(self.L), label="End of glacier")
             if c == p:
@@ -210,18 +214,23 @@ class MinimumGlacierModel():
 
         if C is True:
             c += 1
-            print("C: {}/{}".format(c, p))
+            if show:
+                print("C: {}/{}".format(c, p))
             sub_C = plt.subplot(p, 1, c)
             subplots.append(sub_C)
-            sub_C.plot(self.t, [self.calving_flux(Li) for Li in self.L])
+            sub_C.plot(self.t, [self.calving_flux(Li) for Li in self.L], label="Total")
+            sub_C.plot(self.t, [-self.c * self.water_depth(Li) * self.W * self.kappa * self.mean_ice_thickness(Li) for Li in self.L], "--", label="Front")
+            sub_C.plot(self.t, [-self.c * self.water_depth(Li)**2. * self.W * self.rho_water / self.rho_ice for Li in self.L], "--", label="Float")
             if c == p:
                 sub_C.set_xlabel("Time [y]")
             sub_C.set_ylabel("Calving Flux []")
             sub_C.grid()
+            sub_C.legend()
 
         if V is True:
             c += 1
-            print("V: {}/{}".format(c, p))
+            if show:
+                print("V: {}/{}".format(c, p))
             sub_V = plt.subplot(p, 1, c)
             subplots.append(sub_V)
             sub_V.plot(self.t, [self.mean_ice_thickness(Li) * Li for Li in self.L])
@@ -232,10 +241,12 @@ class MinimumGlacierModel():
 
 
         if filename is not None:
-            plt.savefig(filename)
+            plt.savefig(filename+".png")
 
         if show:
             plt.show()
+        else:
+            plt.clf()
 
 
 class LinearBedModel(MinimumGlacierModel):
