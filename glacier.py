@@ -61,10 +61,12 @@ class MinimumGlacierModel():
             L = self.L_last
         return 0.
 
-    def mean_ice_thickness(self):
+    def mean_ice_thickness(self, L=None):
         """ Calculates the mean ice thickness Hm with equation 1.2.2 """
-        s_mean = self.mean_slope(x=self.L_last)
-        return self.alpha / (1.+self.nu*s_mean) * np.power(self.L_last, 1./2.)
+        if L is None:
+            L = self.L_last
+        s_mean = self.mean_slope(L)
+        return self.alpha / (1.+self.nu*s_mean) * np.power(L, 1./2.)
 
     def water_depth(self, x=None):
         """ Determines the water depth at x by checking if the elevation of the bed is negative """
@@ -72,31 +74,37 @@ class MinimumGlacierModel():
             x = self.L_last
         return -1. * np.min([0., self.bed(x)])
 
-    def calving_flux(self):
+    def calving_flux(self, L=None):
         """ Calculates the calving flux using equations 1.5.1, 1.5.2 and 1.5.3 """
-        d = self.water_depth()
-        H_mean = self.mean_ice_thickness()
+        if L is None:
+            L = self.L_last
+        d = self.water_depth(L)
+        H_mean = self.mean_ice_thickness(L)
         Hf = np.max([self.kappa * H_mean, self.rho_water / self.rho_ice * d])
         F = -self.c * d * Hf * self.W
         return F
 
-    def mass_balance(self):
+    def mass_balance(self, L=None):
         """ Returns the mass balance from equation 1.3.0 """
-        b_mean = self.mean_bed()
-        H_mean = self.mean_ice_thickness()
-        return self.beta * (b_mean + H_mean - self.E) * self.W * self.L_last
+        if L is None:
+            L = self.L_last
+        b_mean = self.mean_bed(L)
+        H_mean = self.mean_ice_thickness(L)
+        return self.beta * (b_mean + H_mean - self.E) * self.W * L
 
-    def change_L(self):
+    def change_L(self, L=None):
         """ Determines dL/dt from equation 1.2.5 """
-        s_mean = self.mean_slope(x=self.L_last)
-        ds = self.d_slope_d_L(self.L_last)
-        Bs = self.mass_balance()
+        if L is None:
+            L = self.L_last
+        s_mean = self.mean_slope(L)
+        ds = self.d_slope_d_L(L)
+        Bs = self.mass_balance(L)
         if self.calving:
-            F = self.calving_flux()
+            F = self.calving_flux(L)
         else:
             F = 0.
-        dldt_1 = 3. * self.alpha / (2*(1+self.nu*s_mean)) * np.power(self.L_last, 1./2.)
-        dldt_2 = - self.alpha * self.nu / np.power(1+self.nu*s_mean, 2.) * np.power(self.L_last, 3./2.) * ds
+        dldt_1 = 3. * self.alpha / (2*(1+self.nu*s_mean)) * np.power(L, 1./2.)
+        dldt_2 = - self.alpha * self.nu / np.power(1+self.nu*s_mean, 2.) * np.power(L, 3./2.) * ds
         dldt_3 = Bs + F
         return np.power(dldt_1 + dldt_2, -1.) * dldt_3
 
@@ -107,13 +115,16 @@ class MinimumGlacierModel():
         else:
             self.E = E
 
+        if np.size(self.E_data) == 1:
+            self.E_data = np.array([self.E], dtype=np.float)
+
         if dt > time:
             dt, time = time, dt
             print("Switching dt and time, so dt={} and time={}".format(dt, time))
 
         i_max = np.int(np.round(time/dt))
 
-        if E and E_new:
+        if E_new:
             E_list = np.linspace(E, E_new, i_max)
         else:
             E_list = None
