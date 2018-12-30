@@ -206,6 +206,7 @@ class MinimumGlacierModel():
             sub_E.plot(self.t, self.E_data, "--", label="E")
             sub_E.plot(self.t, np.max(self.y)*np.ones(np.size(self.t)), label="Top of mountain")
             sub_E.plot(self.t, self.bed(self.L), label="End of glacier")
+            sub_E.plot(self.t, [self.mean_bed(Li) for Li in self.L], label="Mean bed height")
             if c == p:
                 sub_E.set_xlabel("Time [y]")
             sub_E.set_ylabel("Height [m]")
@@ -246,7 +247,9 @@ class MinimumGlacierModel():
         if show:
             plt.show()
         else:
-            plt.clf()
+            # plt.clf()
+            # plt.close()
+            pass
 
 
 class LinearBedModel(MinimumGlacierModel):
@@ -482,12 +485,12 @@ if __name__ == "__main__":
     glacier_l.integrate(0.1, 400., E=900)
     glacier_l.integrate(0.1, 400., E=800)
     glacier_l.integrate(0.1, 400., E=700)
-    glacier_l.plot(E=True, C=True, V=True, show=False, filename=None)
+    glacier_l.plot(E=True, C=True, V=True, show=False)
 
     glacier_c = ConcaveBedModel()
     glacier_c.integrate(0.1, 400., E=1200)
     glacier_c.integrate(0.1, 400., E=1100)
     glacier_c.integrate(0.1, 400., E=1000)
-    glacier_c.plot(E=True, C=True, V=True, show=False, filename=None)
+    glacier_c.plot(E=True, C=True, V=True, show=False)
 
     plt.show()
