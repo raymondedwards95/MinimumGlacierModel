@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
+from tributary import *
+
 __all__ = ["LinearBedModel", "ConcaveBedModel", "CustomBedModel"]
 
 
@@ -32,6 +34,8 @@ class MinimumGlacierModel():
         self.x = np.linspace(0., 1e5)
         self.y = -1.*self.x + np.max(self.x)/2.
 
+        self.tributary = []
+
 
     def __str__(self):
         return "Base class for a minimum Glacier Model."
@@ -61,6 +65,10 @@ class MinimumGlacierModel():
         if L is None:
             L = self.L_last
         return 0.
+
+    def add_bucket_tributary(self, L=1e3, w0=5, w1=15, h0=0, h1=1e2):
+        """ Adds a bucket tributary glacier to the main glacier """
+        self.tributary.append(BucketTributary(L=L, w0=w0, w1=w1, h0=h0, h1=h1))
 
     def mean_ice_thickness(self, L=None):
         """ Calculates the mean ice thickness Hm with equation 1.2.2 """
@@ -103,8 +111,13 @@ class MinimumGlacierModel():
             F = self.calving_flux(L)
         else:
             F = 0.
+        low = self.bed(L)
+        high = self.bed(0)
         Bm = self.mass_balance(L)
         budget = F + Bm
+        for subglacier in self.tributary:
+            if high >= subglacier.h0 >= low:
+                budget += subglacier.net_effect(E, beta=self.beta)
         return budget
 
     def change_L(self, L=None):
@@ -291,6 +304,8 @@ class LinearBedModel(MinimumGlacierModel):
         self.x = np.linspace(0., 1e5, 101)
         self.y = self.bed(self.x)
 
+        self.tributary = []
+
     def __str__(self):
         return "Minimum Glacier Model for a linear bed."
 
@@ -351,6 +366,8 @@ class ConcaveBedModel(MinimumGlacierModel):
 
         self.x = np.linspace(0., 1e5, 101)
         self.y = self.bed(self.x)
+
+        self.tributary = []
 
     def __str__(self):
         return "Minimum Glacier Model for a concave bed."
@@ -419,6 +436,8 @@ class CustomBedModel(MinimumGlacierModel):
         self.s = self.slope(self.x)
         self.mb = self.mean_bed_init()
         self.ms = self.mean_slope_init()
+
+        self.tributary = []
 
     def __str__(self):
         return "Minimum Glacier Model for a custom bed."
