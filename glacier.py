@@ -93,20 +93,29 @@ class MinimumGlacierModel():
         H_mean = self.mean_ice_thickness(L)
         return self.beta * (b_mean + H_mean - self.E) * self.W * L
 
+    def mass_budget(self, L=None, E=None):
+        """ Returns the mass budget from equation 1.6.2 """
+        if L is None:
+            L = self.L_last
+        if E is None:
+            E = self.E
+        if self.calving:
+            F = self.calving_flux(L)
+        else:
+            F = 0.
+        Bm = self.mass_balance(L)
+        budget = F + Bm
+        return budget
+
     def change_L(self, L=None):
         """ Determines dL/dt from equation 1.2.5 """
         if L is None:
             L = self.L_last
         s_mean = self.mean_slope(L)
         ds = self.d_slope_d_L(L)
-        Bs = self.mass_balance(L)
-        if self.calving:
-            F = self.calving_flux(L)
-        else:
-            F = 0.
         dldt_1 = 3. * self.alpha / (2*(1+self.nu*s_mean)) * np.power(L, 1./2.)
         dldt_2 = - self.alpha * self.nu / np.power(1+self.nu*s_mean, 2.) * np.power(L, 3./2.) * ds
-        dldt_3 = Bs + F
+        dldt_3 = self.mass_budget(L)
         return np.power(dldt_1 + dldt_2, -1.) * dldt_3
 
     def integrate(self, dt, time, E=None, E_new=None, show=False):
