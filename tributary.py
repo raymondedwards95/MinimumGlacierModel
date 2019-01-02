@@ -19,7 +19,12 @@ class BucketTributary():
         return "Tributary glacier represented by a basin with a tilted trapezoidal shape."
 
     def mass_budget(self, E, beta=None):
-        """ Calculates the mass budget from equation 1.6.1 """
+        """ Calculates the mass budget from equation 1.6.1 
+        
+        Bm = beta * [w0 * (h0-E) * L 
+            + 1/2 * {s*w0 + (b0-E)*q} * L^2 
+            + 1/3  * s * q * L^3]
+        """
         if beta is None:
             beta = 0.007
         A_ = self.w0 * (self.h0 - E) * self.l
