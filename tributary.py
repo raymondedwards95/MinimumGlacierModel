@@ -3,9 +3,18 @@ import numpy as np
 
 __all__ = ["BucketTributary"]
 
+
 class BucketTributary():
-    """ Class for bucket tributary glacier """
-    def __init__(self, L=1e3, w0=5, w1=15, h0=0, h1=1e2):
+    """ Class for bucket tributary glacier 
+    
+    Parameters:
+        L: length of bucket
+        w0: width at the base
+        w1: width at the top
+        h0: elevation of the base
+        h1: elevation of the top
+    """
+    def __init__(self, L: float=1.e3, w0: float=5., w1: float=15., h0: float=0., h1: float=1.e2):
         self.l = L
         self.w0 = w0
         self.w1 = w1

@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from tributary import *
+from tributary import BucketTributary
 
 __all__ = ["LinearBedModel", "ConcaveBedModel", "CustomBedModel"]
 
@@ -9,11 +9,13 @@ __all__ = ["LinearBedModel", "ConcaveBedModel", "CustomBedModel"]
 class MinimumGlacierModel():
     """ Base class for minimum glacier models """
 
-    def __init__(self, calving=True, L0=1., t0=0.):
+    def __init__(self, calving: bool=True, L0: float=1., t0: float=0., E: float=2900.,
+                 alpha: float=3., beta: float=0.007, nu: float=10., 
+                 c: float=1., kappa: float=1/2.):
         # should not use this object to create a glacier
-        self.alpha = 3.
-        self.beta = 0.007
-        self.nu = 10.
+        self.alpha = alpha
+        self.beta = beta
+        self.nu = nu
         self.W = 1. # meters
 
         self.L_last = L0  # meters # initial value
@@ -25,10 +27,10 @@ class MinimumGlacierModel():
         self.calving = calving
         self.rho_water = 1000.
         self.rho_ice = 917.
-        self.c = 1.
-        self.kappa = 1/200.
+        self.c = c
+        self.kappa = kappa
 
-        self.E = 2900.
+        self.E = E
         self.E_data = np.array([self.E], dtype=np.float)
 
         self.x = np.linspace(0., 1e5)
@@ -322,13 +324,16 @@ class MinimumGlacierModel():
 class LinearBedModel(MinimumGlacierModel):
     """ Minimum glacier model for a linear bed """
 
-    def __init__(self, b0=3900., s=0.1, calving=True, L0=1., t0=0.):
+    def __init__(self, b0: float=3900., s: float=0.1, 
+                 calving: bool=True, L0: float=1., t0: float=0., E: float=2900.,
+                 alpha: float=3., beta: float=0.007, nu: float=10.,
+                 c: float=1., kappa: float=1/2.):
         self.b0 = b0
         self.s = s
 
-        self.alpha = 3.
-        self.beta = 0.007
-        self.nu = 10.
+        self.alpha = alpha
+        self.beta = beta
+        self.nu = nu
         self.W = 1. # meters
 
         self.L_last = L0  # meters # initial value
@@ -340,10 +345,10 @@ class LinearBedModel(MinimumGlacierModel):
         self.calving = calving
         self.rho_water = 1000.
         self.rho_ice = 917.
-        self.c = 1.
-        self.kappa = 1./200.
+        self.c = c
+        self.kappa = kappa
 
-        self.E = 2900.
+        self.E = E
         self.E_data = np.array([self.E], dtype=np.float)
 
         self.x = np.linspace(0., 1e5, 101)
@@ -399,7 +404,10 @@ class LinearBedModel(MinimumGlacierModel):
 class ConcaveBedModel(MinimumGlacierModel):
     """ Minimum glacier model for a concave bed """
 
-    def __init__(self, b0=3900., ba=-100., xl=7000., calving=True, L0=1., t0=0.):
+    def __init__(self, b0: float=3900., ba: float=-100., xl: float=7000., 
+                 calving: bool=True, L0: float=1., t0: float=0., E: float=2900.,
+                 alpha: float=3., beta: float=0.007, nu: float=10., 
+                 c: float=1., kappa: float=1/2.):
         self.b0 = b0
         self.ba = ba
         self.xl = xl
@@ -485,7 +493,10 @@ class ConcaveBedModel(MinimumGlacierModel):
 class CustomBedModel(MinimumGlacierModel):
     """ Minimum glacier model for a custom bed """
 
-    def __init__(self, x, y, calving=True, L0=1., t0=0.):
+    def __init__(self, x, y, 
+                 calving: bool=True, L0: float=1., t0: float=0., E: float=2900.,
+                 alpha: float=3., beta: float=0.007, nu: float=10., 
+                 c: float=1., kappa: float=1/2.):
         self.alpha = 3.
         self.beta = 0.007
         self.nu = 10.
