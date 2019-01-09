@@ -83,7 +83,7 @@ class MinimumGlacierModel():
             L = self.L_last
         return 0.
 
-    def add_bucket_tributary(self, L=1e3, w0=5, w1=15, h0=0, h1=1e2):
+    def add_bucket_tributary(self, L=1e3, w0=5, w1=15, h0=0, h1=1e2, show=False):
         """ Adds a bucket tributary glacier to the main glacier 
         
         parameters:
@@ -94,6 +94,8 @@ class MinimumGlacierModel():
         h1 - elevation of top
         """
         self.tributary.append(BucketTributary(L=L, w0=w0, w1=w1, h0=h0, h1=h1))
+        if show: 
+            print("Created tributary at y={:0.2f}".format(h0))
 
     def mean_ice_thickness(self, L=None):
         """ Calculates the mean ice thickness Hm with equation 1.2.2 
@@ -319,6 +321,12 @@ class MinimumGlacierModel():
             # plt.clf()
             # plt.close()
             pass
+
+    def print_parameters(self, header=False):
+        if header:
+            print("|    alpha |     beta |       nu |        c |    kappa |")
+        print("| {:8.2f} | {:8.4f} | {:8.2f} | {:8.2f} | {:8.4f} |".format(self.alpha, self.beta, self.nu, self.c, self.kappa))
+        return (self.alpha, self.beta, self.nu, self.c, self.kappa)
 
 
 class LinearBedModel(MinimumGlacierModel):
@@ -618,15 +626,17 @@ class CustomBedModel(MinimumGlacierModel):
 if __name__ == "__main__":
 
     glacier_l = LinearBedModel()
-    glacier_l.integrate(0.1, 400., E=900)
-    glacier_l.integrate(0.1, 400., E=800)
-    glacier_l.integrate(0.1, 400., E=700)
+    glacier_l.print_parameters(header=True)
+    glacier_l.integrate(0.5, 400., E=900)
+    glacier_l.integrate(0.5, 400., E=800)
+    glacier_l.integrate(0.5, 400., E=700)
     glacier_l.plot(E=True, C=True, V=True, show=False)
 
     glacier_c = ConcaveBedModel()
-    glacier_c.integrate(0.1, 400., E=1200)
-    glacier_c.integrate(0.1, 400., E=1100)
-    glacier_c.integrate(0.1, 400., E=1000)
+    glacier_c.print_parameters()
+    glacier_c.integrate(0.5, 400., E=1200)
+    glacier_c.integrate(0.5, 400., E=1100)
+    glacier_c.integrate(0.5, 400., E=1000)
     glacier_c.plot(E=True, C=True, V=True, show=False)
 
     plt.show()
