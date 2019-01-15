@@ -14,12 +14,14 @@ class BucketTributary():
         h0: elevation of the base
         h1: elevation of the top
     """
-    def __init__(self, L: float=1.e3, w0: float=5., w1: float=15., h0: float=0., h1: float=1.e2):
+    def __init__(self, L: float=1.e3, w0: float=5., w1: float=15., h0: float=0., h1: float=1.e2, number: int=0):
         self.l = L
         self.w0 = w0
         self.w1 = w1
         self.h0 = np.min([h0, h1])
         self.h1 = np.max([h0, h1])
+
+        self.id = number
 
         self.q = (w1 - w0) / L
         self.s = (h1 - h0) / L

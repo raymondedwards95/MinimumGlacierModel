@@ -7,12 +7,34 @@ __all__ = ["LinearBedModel", "ConcaveBedModel", "CustomBedModel"]
 
 
 class MinimumGlacierModel():
-    """ Base class for minimum glacier models """
+    """ Base class for minimum glacier models 
+    
+    Glacier options:
+        name: name of object
+        L0: initial length
+        t0: initial time
+        E: initial equilibrium line altitude
+
+    Bed parameters:
+
+    Ice parameters:
+        alpha:
+        beta:
+        nu:
+
+    Calving parameters:
+        calving: include calving?
+        c: calving parameter ~1
+        kappa: fraction of mean ice thickness that is being calved
+    """
 
     def __init__(self, calving: bool=True, L0: float=1., t0: float=0., E: float=2900.,
                  alpha: float=3., beta: float=0.007, nu: float=10., 
-                 c: float=1., kappa: float=1/2.):
+                 c: float=1., kappa: float=1/2.,
+                 name :str="Glacier"):
         # should not use this object to create a glacier
+        self.name = name
+
         self.alpha = alpha
         self.beta = beta
         self.nu = nu
@@ -37,7 +59,7 @@ class MinimumGlacierModel():
         self.y = -1.*self.x + np.max(self.x)/2.
 
         self.tributary = []
-
+        self.tributary_number = 0
 
     def __str__(self):
         return "Base class for a minimum Glacier Model."
@@ -93,7 +115,8 @@ class MinimumGlacierModel():
         h0 - elevation of bottom
         h1 - elevation of top
         """
-        self.tributary.append(BucketTributary(L=L, w0=w0, w1=w1, h0=h0, h1=h1))
+        self.tributary.append(BucketTributary(L=L, w0=w0, w1=w1, h0=h0, h1=h1, index=self.tributary_number))
+        self.tributary_number += 1
         if show: 
             print("Created tributary at y={:0.2f}".format(h0))
 
@@ -233,7 +256,6 @@ class MinimumGlacierModel():
         else:
             self.E_data = np.append(self.E_data, np.array([self.E]*i_max))
 
-
     def plot(self, E=False, C=False, V=False, show=True, filename=None):
         """ Create a figure with glacier length and other data """
         if show:
@@ -323,21 +345,53 @@ class MinimumGlacierModel():
             pass
 
     def print_parameters(self, header=False):
+        """ Shows the parameters of ice and calving """
         if header:
             print("|    alpha |     beta |       nu |        c |    kappa |")
-        print("| {:8.2f} | {:8.4f} | {:8.2f} | {:8.2f} | {:8.4f} |".format(self.alpha, self.beta, self.nu, self.c, self.kappa))
+        print("| {:8.2f} | {:8.4f} | {:8.2f} | {:8.2f} | {:8.4f} |".format(self.alpha, self.beta, self.nu, self.c, self.kappa), self.name)
         return (self.alpha, self.beta, self.nu, self.c, self.kappa)
+
+    def data(self):
+        """ Returns data:
+
+        time, length, equilibrium line altitude 
+        """
+        return self.t, self.L, self.E_data
 
 
 class LinearBedModel(MinimumGlacierModel):
-    """ Minimum glacier model for a linear bed """
+    """ Minimum glacier model for a linear bed 
+    
+    Glacier options:
+        name: name of object
+        L0: initial length
+        t0: initial time
+        E: initial equilibrium line altitude
+
+    Bed parameters:
+        b0: elevation of the top of the bed
+        s: slope of the bed
+
+    Ice parameters:
+        alpha:
+        beta:
+        nu:
+
+    Calving parameters:
+        calving: include calving?
+        c: calving parameter ~1
+        kappa: fraction of mean ice thickness that is being calved
+    """
 
     def __init__(self, b0: float=3900., s: float=0.1, 
                  calving: bool=True, L0: float=1., t0: float=0., E: float=2900.,
                  alpha: float=3., beta: float=0.007, nu: float=10.,
-                 c: float=1., kappa: float=1/2.):
+                 c: float=1., kappa: float=1/2.,
+                 name :str="Linear Bed glacier"):
         self.b0 = b0
         self.s = s
+
+        self.name = name
 
         self.alpha = alpha
         self.beta = beta
@@ -363,6 +417,7 @@ class LinearBedModel(MinimumGlacierModel):
         self.y = self.bed(self.x)
 
         self.tributary = []
+        self.tributary_number = 0
 
     def __str__(self):
         return "Minimum Glacier Model for a linear bed."
@@ -410,15 +465,40 @@ class LinearBedModel(MinimumGlacierModel):
 
 
 class ConcaveBedModel(MinimumGlacierModel):
-    """ Minimum glacier model for a concave bed """
+    """ Minimum glacier model for a concave bed 
+    
+    Glacier options:
+        name: name of object
+        L0: initial length
+        t0: initial time
+        E: initial equilibrium line altitude
+
+    Bed parameters:
+        b0: elevation of the top of the bed
+        ba: elevation of the end of the bed
+        xl: length-scale of the bed
+
+    Ice parameters:
+        alpha:
+        beta:
+        nu:
+
+    Calving parameters:
+        calving: include calving?
+        c: calving parameter ~1
+        kappa: fraction of mean ice thickness that is being calved
+    """
 
     def __init__(self, b0: float=3900., ba: float=-100., xl: float=7000., 
                  calving: bool=True, L0: float=1., t0: float=0., E: float=2900.,
                  alpha: float=3., beta: float=0.007, nu: float=10., 
-                 c: float=1., kappa: float=1/2.):
+                 c: float=1., kappa: float=1/2.,
+                 name :str="Concave bed glacier"):
         self.b0 = b0
         self.ba = ba
         self.xl = xl
+
+        self.name = name
 
         self.alpha = alpha
         self.beta = beta
@@ -444,6 +524,7 @@ class ConcaveBedModel(MinimumGlacierModel):
         self.y = self.bed(self.x)
 
         self.tributary = []
+        self.tributary_number = 0
 
     def __str__(self):
         return "Minimum Glacier Model for a concave bed."
@@ -499,12 +580,37 @@ class ConcaveBedModel(MinimumGlacierModel):
 
 
 class CustomBedModel(MinimumGlacierModel):
-    """ Minimum glacier model for a custom bed """
+    """ Minimum glacier model for a custom bed 
+    
+    Glacier options:
+        name: name of object
+        L0: initial length
+        t0: initial time
+        E: initial equilibrium line altitude
+
+    Bed parameters:
+        x: x-coordinates
+        y: y-coordinates
+
+    Ice parameters:
+        alpha:
+        beta:
+        nu:
+
+    Calving parameters:
+        calving: include calving?
+        c: calving parameter ~1
+        kappa: fraction of mean ice thickness that is being calved
+        
+        """
 
     def __init__(self, x, y, 
                  calving: bool=True, L0: float=1., t0: float=0., E: float=2900.,
                  alpha: float=3., beta: float=0.007, nu: float=10., 
-                 c: float=1., kappa: float=1/2.):
+                 c: float=1., kappa: float=1/2.,
+                 name :str="Custom bed glacier"):
+        self.name = name
+
         self.alpha = alpha
         self.beta = beta
         self.nu = nu
@@ -532,6 +638,7 @@ class CustomBedModel(MinimumGlacierModel):
         self.ms = self.mean_slope_init()
 
         self.tributary = []
+        self.tributary_number = 0
 
     def __str__(self):
         return "Minimum Glacier Model for a custom bed."
