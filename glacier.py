@@ -39,6 +39,7 @@ class MinimumGlacierModel():
         self.beta = beta
         self.nu = nu
         self.W = 1. # meters
+        self.width_glacier = 1# used for mass balance of tributaries
 
         self.L_last = L0  # meters # initial value
         self.t_last = t0  # years
@@ -115,7 +116,7 @@ class MinimumGlacierModel():
         h0 - elevation of bottom
         h1 - elevation of top
         """
-        self.tributary.append(BucketTributary(L=L, w0=w0, w1=w1, h0=h0, h1=h1, index=self.tributary_number))
+        self.tributary.append(BucketTributary(L=L, w0=w0, w1=w1, h0=h0, h1=h1, number=self.tributary_number))
         self.tributary_number += 1
         if show: 
             print("Created tributary at y={:0.2f}".format(h0))
@@ -183,7 +184,7 @@ class MinimumGlacierModel():
         budget = F + Bm
         for subglacier in self.tributary:
             if high >= subglacier.h0 >= low:
-                budget += subglacier.net_effect(E, beta=self.beta)
+                budget += subglacier.net_effect(E, beta=self.beta) / self.width_glacier
         return budget
 
     def change_L(self, L=None):
@@ -396,7 +397,8 @@ class LinearBedModel(MinimumGlacierModel):
         self.alpha = alpha
         self.beta = beta
         self.nu = nu
-        self.W = 1. # meters
+        self.W = 1.  # meters
+        self.width_glacier = 1 # used for mass balance of tributaries
 
         self.L_last = L0  # meters # initial value
         self.t_last = t0  # years
@@ -503,7 +505,8 @@ class ConcaveBedModel(MinimumGlacierModel):
         self.alpha = alpha
         self.beta = beta
         self.nu = nu
-        self.W = 1. # meters
+        self.W = 1.  # meters
+        self.width_glacier = 1 # used for mass balance of tributaries
 
         self.L_last = L0  # meters # initial value
         self.t_last = t0  # years
@@ -614,7 +617,8 @@ class CustomBedModel(MinimumGlacierModel):
         self.alpha = alpha
         self.beta = beta
         self.nu = nu
-        self.W = 1. # meters
+        self.W = 1.  # meters
+        self.width_glacier = 1 # used for mass balance of tributaries
 
         self.L_last = L0  # meters # initial value
         self.t_last = t0  # years
