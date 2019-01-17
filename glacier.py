@@ -31,7 +31,7 @@ class MinimumGlacierModel():
     def __init__(self, calving: bool=True, L0: float=1., t0: float=0., E: float=2900.,
                  alpha: float=3., beta: float=0.007, nu: float=10., 
                  c: float=1., kappa: float=1/2.,
-                 name :str="Glacier"):
+                 W: float=1, name :str="Glacier"):
         # should not use this object to create a glacier
         self.name = name
 
@@ -39,7 +39,7 @@ class MinimumGlacierModel():
         self.beta = beta
         self.nu = nu
         self.W = 1. # meters
-        self.width_glacier = 1# used for mass balance of tributaries
+        self.width_glacier = W# used for mass balance of tributaries
 
         self.L_last = L0  # meters # initial value
         self.t_last = t0  # years
@@ -184,7 +184,7 @@ class MinimumGlacierModel():
         budget = F + Bm
         for subglacier in self.tributary:
             if high >= subglacier.h0 >= low:
-                budget += subglacier.net_effect(E, beta=self.beta) / self.width_glacier
+                budget += subglacier.net_effect(E, beta=self.beta) / (self.width_glacier * self.mean_ice_thickness())
         return budget
 
     def change_L(self, L=None):
@@ -387,8 +387,8 @@ class LinearBedModel(MinimumGlacierModel):
     def __init__(self, b0: float=3900., s: float=0.1, 
                  calving: bool=True, L0: float=1., t0: float=0., E: float=2900.,
                  alpha: float=3., beta: float=0.007, nu: float=10.,
-                 c: float=1., kappa: float=1/2.,
-                 name :str="Linear Bed glacier"):
+                 c: float = 1., kappa: float = 1/2.,
+                 W: float = 1, name :str="Linear Bed glacier"):
         self.b0 = b0
         self.s = s
 
@@ -398,7 +398,7 @@ class LinearBedModel(MinimumGlacierModel):
         self.beta = beta
         self.nu = nu
         self.W = 1.  # meters
-        self.width_glacier = 1 # used for mass balance of tributaries
+        self.width_glacier = W # used for mass balance of tributaries
 
         self.L_last = L0  # meters # initial value
         self.t_last = t0  # years
@@ -495,7 +495,7 @@ class ConcaveBedModel(MinimumGlacierModel):
                  calving: bool=True, L0: float=1., t0: float=0., E: float=2900.,
                  alpha: float=3., beta: float=0.007, nu: float=10., 
                  c: float=1., kappa: float=1/2.,
-                 name :str="Concave bed glacier"):
+                 W: float = 1, name :str="Concave bed glacier"):
         self.b0 = b0
         self.ba = ba
         self.xl = xl
@@ -506,7 +506,7 @@ class ConcaveBedModel(MinimumGlacierModel):
         self.beta = beta
         self.nu = nu
         self.W = 1.  # meters
-        self.width_glacier = 1 # used for mass balance of tributaries
+        self.width_glacier = W # used for mass balance of tributaries
 
         self.L_last = L0  # meters # initial value
         self.t_last = t0  # years
@@ -610,15 +610,15 @@ class CustomBedModel(MinimumGlacierModel):
     def __init__(self, x, y, 
                  calving: bool=True, L0: float=1., t0: float=0., E: float=2900.,
                  alpha: float=3., beta: float=0.007, nu: float=10., 
-                 c: float=1., kappa: float=1/2.,
-                 name :str="Custom bed glacier"):
+                 c: float = 1., kappa: float = 1/2.,
+                 W: float = 1, name :str="Custom bed glacier"):
         self.name = name
 
         self.alpha = alpha
         self.beta = beta
         self.nu = nu
         self.W = 1.  # meters
-        self.width_glacier = 1 # used for mass balance of tributaries
+        self.width_glacier = W # used for mass balance of tributaries
 
         self.L_last = L0  # meters # initial value
         self.t_last = t0  # years
