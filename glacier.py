@@ -31,7 +31,7 @@ class MinimumGlacierModel():
     def __init__(self, calving: bool=True, L0: float=1., t0: float=0., E: float=2900.,
                  alpha: float=3., beta: float=0.007, nu: float=10., 
                  c: float=1., kappa: float=1/2.,
-                 W: float=1, name :str="Glacier"):
+                 W: float=1., name: str="Glacier"):
         # should not use this object to create a glacier
         self.name = name
 
@@ -387,39 +387,19 @@ class LinearBedModel(MinimumGlacierModel):
     def __init__(self, b0: float=3900., s: float=0.1, 
                  calving: bool=True, L0: float=1., t0: float=0., E: float=2900.,
                  alpha: float=3., beta: float=0.007, nu: float=10.,
-                 c: float = 1., kappa: float = 1/2.,
-                 W: float = 1, name :str="Linear Bed glacier"):
+                 c: float=1., kappa: float=1/2.,
+                 W: float=1., name: str="Linear Bed glacier"):
+        # super sets parameters as in parent class, MinimumGlacierModel
+        super().__init__(calving=calving, L0=L0, t0=t0, E=E,
+                         alpha=alpha, beta=beta, nu=nu,
+                         c=c, kappa=kappa,
+                         W=W, name=name)
+
         self.b0 = b0
         self.s = s
 
-        self.name = name
-
-        self.alpha = alpha
-        self.beta = beta
-        self.nu = nu
-        self.W = 1.  # meters
-        self.width_glacier = W # used for mass balance of tributaries
-
-        self.L_last = L0  # meters # initial value
-        self.t_last = t0  # years
-
-        self.L = np.array([self.L_last], dtype=np.float)
-        self.t = np.array([self.t_last], dtype=np.float)
-
-        self.calving = calving
-        self.rho_water = 1000.
-        self.rho_ice = 917.
-        self.c = c
-        self.kappa = kappa
-
-        self.E = E
-        self.E_data = np.array([self.E], dtype=np.float)
-
         self.x = np.linspace(0., 1e5, 101)
         self.y = self.bed(self.x)
-
-        self.tributary = []
-        self.tributary_number = 0
 
     def __str__(self):
         return "Minimum Glacier Model for a linear bed."
@@ -495,39 +475,19 @@ class ConcaveBedModel(MinimumGlacierModel):
                  calving: bool=True, L0: float=1., t0: float=0., E: float=2900.,
                  alpha: float=3., beta: float=0.007, nu: float=10., 
                  c: float=1., kappa: float=1/2.,
-                 W: float = 1, name :str="Concave bed glacier"):
+                 W: float=1., name: str="Concave bed glacier"):
+        # super sets parameters as in parent class, MinimumGlacierModel
+        super().__init__(calving=calving, L0=L0, t0=t0, E=E,
+                         alpha=alpha, beta=beta, nu=nu,
+                         c=c, kappa=kappa,
+                         W=W, name=name)
+        
         self.b0 = b0
         self.ba = ba
         self.xl = xl
 
-        self.name = name
-
-        self.alpha = alpha
-        self.beta = beta
-        self.nu = nu
-        self.W = 1.  # meters
-        self.width_glacier = W # used for mass balance of tributaries
-
-        self.L_last = L0  # meters # initial value
-        self.t_last = t0  # years
-
-        self.L = np.array([self.L_last], dtype=np.float)
-        self.t = np.array([self.t_last], dtype=np.float)
-
-        self.calving = calving
-        self.rho_water = 1000.
-        self.rho_ice = 917.
-        self.c = c
-        self.kappa = kappa
-
-        self.E = E
-        self.E_data = np.array([self.E], dtype=np.float)
-
         self.x = np.linspace(0., 1e5, 101)
         self.y = self.bed(self.x)
-
-        self.tributary = []
-        self.tributary_number = 0
 
     def __str__(self):
         return "Minimum Glacier Model for a concave bed."
@@ -610,39 +570,19 @@ class CustomBedModel(MinimumGlacierModel):
     def __init__(self, x, y, 
                  calving: bool=True, L0: float=1., t0: float=0., E: float=2900.,
                  alpha: float=3., beta: float=0.007, nu: float=10., 
-                 c: float = 1., kappa: float = 1/2.,
-                 W: float = 1, name :str="Custom bed glacier"):
-        self.name = name
-
-        self.alpha = alpha
-        self.beta = beta
-        self.nu = nu
-        self.W = 1.  # meters
-        self.width_glacier = W # used for mass balance of tributaries
-
-        self.L_last = L0  # meters # initial value
-        self.t_last = t0  # years
-
-        self.L = np.array([self.L_last], dtype=np.float)
-        self.t = np.array([self.t_last], dtype=np.float)
-
-        self.calving = calving
-        self.rho_water = 1000.
-        self.rho_ice = 917.
-        self.c = c
-        self.kappa = kappa
-
-        self.E = E
-        self.E_data = np.array([self.E], dtype=np.float)
+                 c: float=1., kappa: float=1/2.,
+                 W: float=1., name: str="Custom bed glacier"):
+        # super sets parameters as in parent class, MinimumGlacierModel
+        super().__init__(calving=calving, L0=L0, t0=t0, E=E,
+                         alpha=alpha, beta=beta, nu=nu,
+                         c=c, kappa=kappa,
+                         W=W, name=name)
 
         self.x = np.array(x, dtype=np.float)
         self.y = np.array(y, dtype=np.float)
         self.s = self.slope(self.x)
         self.mb = self.mean_bed_init()
         self.ms = self.mean_slope_init()
-
-        self.tributary = []
-        self.tributary_number = 0
 
     def __str__(self):
         return "Minimum Glacier Model for a custom bed."
