@@ -31,15 +31,14 @@ class MinimumGlacierModel():
     def __init__(self, calving: bool=True, L0: float=1., t0: float=0., E: float=2900.,
                  alpha: float=3., beta: float=0.007, nu: float=10., 
                  c: float=1., kappa: float=1/2.,
-                 W: float=1., name: str="Glacier"):
+                 w: float=1., name: str="Glacier"):
         # should not use this object to create a glacier
         self.name = name
 
         self.alpha = alpha
         self.beta = beta
         self.nu = nu
-        self.W = 1. # meters
-        self.width_glacier = W# used for mass balance of tributaries
+        self.w = w # used for mass balance of tributaries
 
         self.L_last = L0  # meters # initial value
         self.t_last = t0  # years
@@ -144,26 +143,28 @@ class MinimumGlacierModel():
         """ Calculates the calving flux using equations 1.5.1, 1.5.2 and 1.5.3 
         
         Hf = max(K*Hm, d*rw/ri);
-        F = - c*d*Hf*W
+        F = - c*d*Hf*w
         """
+        w = 1. # note that most equations use w = 1
         if L is None:
             L = self.L_last
         d = self.water_depth(L)
         H_mean = self.mean_ice_thickness(L)
         Hf = np.max([self.kappa * H_mean, self.rho_water / self.rho_ice * d])
-        F = -self.c * d * Hf * self.W
+        F = -self.c * d * Hf * w
         return F
 
     def mass_balance(self, L=None):
         """ Returns the mass balance from equation 1.3.0 
         
-        Bs = beta * ([b] + Hm - E) * W * L
+        Bs = beta * ([b] + Hm - E) * w * L
         """
+        w = 1. # note that most equations use w = 1
         if L is None:
             L = self.L_last
         b_mean = self.mean_bed(L)
         H_mean = self.mean_ice_thickness(L)
-        return self.beta * (b_mean + H_mean - self.E) * self.W * L
+        return self.beta * (b_mean + H_mean - self.E) * w * L
 
     def mass_budget(self, L=None, E=None):
         """ Returns the mass budget from equation 1.6.2 
@@ -184,7 +185,7 @@ class MinimumGlacierModel():
         budget = F + Bm
         for subglacier in self.tributary:
             if high >= subglacier.h0 >= low:
-                budget += subglacier.net_effect(E, beta=self.beta) / (self.width_glacier * self.mean_ice_thickness())
+                budget += subglacier.net_effect(E, beta=self.beta) / (self.w * self.mean_ice_thickness())
         return budget
 
     def change_L(self, L=None):
@@ -308,14 +309,15 @@ class MinimumGlacierModel():
             sub_E.legend()
 
         if C is True:
+            w = 1. # note that most equations use w = 1
             c += 1
             if show:
                 print("C: {}/{}".format(c, p))
             sub_C = plt.subplot(p, 1, c)
             subplots.append(sub_C)
             sub_C.plot(self.t, [self.calving_flux(Li) for Li in self.L], label="Total")
-            sub_C.plot(self.t, [-self.c * self.water_depth(Li) * self.W * self.kappa * self.mean_ice_thickness(Li) for Li in self.L], "--", label="Front")
-            sub_C.plot(self.t, [-self.c * self.water_depth(Li)**2. * self.W * self.rho_water / self.rho_ice for Li in self.L], "--", label="Float")
+            sub_C.plot(self.t, [-self.c * self.water_depth(Li) * w * self.kappa * self.mean_ice_thickness(Li) for Li in self.L], "--", label="Front")
+            sub_C.plot(self.t, [-self.c * self.water_depth(Li)**2. * w * self.rho_water / self.rho_ice for Li in self.L], "--", label="Float")
             if c == p:
                 sub_C.set_xlabel("Time [y]")
             sub_C.set_ylabel("Calving Flux []")
@@ -388,12 +390,12 @@ class LinearBedModel(MinimumGlacierModel):
                  calving: bool=True, L0: float=1., t0: float=0., E: float=2900.,
                  alpha: float=3., beta: float=0.007, nu: float=10.,
                  c: float=1., kappa: float=1/2.,
-                 W: float=1., name: str="Linear Bed glacier"):
+                 w: float=1., name: str="Linear Bed glacier"):
         # super sets parameters as in parent class, MinimumGlacierModel
         super().__init__(calving=calving, L0=L0, t0=t0, E=E,
                          alpha=alpha, beta=beta, nu=nu,
                          c=c, kappa=kappa,
-                         W=W, name=name)
+                         w=w, name=name)
 
         self.b0 = b0
         self.s = s
@@ -475,12 +477,12 @@ class ConcaveBedModel(MinimumGlacierModel):
                  calving: bool=True, L0: float=1., t0: float=0., E: float=2900.,
                  alpha: float=3., beta: float=0.007, nu: float=10., 
                  c: float=1., kappa: float=1/2.,
-                 W: float=1., name: str="Concave bed glacier"):
+                 w: float=1., name: str="Concave bed glacier"):
         # super sets parameters as in parent class, MinimumGlacierModel
         super().__init__(calving=calving, L0=L0, t0=t0, E=E,
                          alpha=alpha, beta=beta, nu=nu,
                          c=c, kappa=kappa,
-                         W=W, name=name)
+                         w=w, name=name)
         
         self.b0 = b0
         self.ba = ba
@@ -571,12 +573,12 @@ class CustomBedModel(MinimumGlacierModel):
                  calving: bool=True, L0: float=1., t0: float=0., E: float=2900.,
                  alpha: float=3., beta: float=0.007, nu: float=10., 
                  c: float=1., kappa: float=1/2.,
-                 W: float=1., name: str="Custom bed glacier"):
+                 w: float=1., name: str="Custom bed glacier"):
         # super sets parameters as in parent class, MinimumGlacierModel
         super().__init__(calving=calving, L0=L0, t0=t0, E=E,
                          alpha=alpha, beta=beta, nu=nu,
                          c=c, kappa=kappa,
-                         W=W, name=name)
+                         w=w, name=name)
 
         self.x = np.array(x, dtype=np.float)
         self.y = np.array(y, dtype=np.float)
