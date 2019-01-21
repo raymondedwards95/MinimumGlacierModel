@@ -32,5 +32,5 @@ glacier.plot()
 _For full explanation, see the notebooks._
 
 ![Bed of Veteranen](/figures/bed.png)
-![History of Veteranen](/figures/veteranen_past.png)
+![History of Veteranen](/figures/veteranen_past_4000.png)
 
