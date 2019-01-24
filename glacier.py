@@ -62,7 +62,7 @@ class MinimumGlacierModel():
         self.tributary_number = 0
 
     def __str__(self):
-        return "Base class for a minimum Glacier Model."
+        return "Base class for a minimum Glacier Model: {}".format(self.name)
 
     def bed(self, x):
         """ Returns the elevation of the bed at point x 
@@ -315,7 +315,7 @@ class MinimumGlacierModel():
                 print("C: {}/{}".format(c, p))
             sub_C = plt.subplot(p, 1, c)
             subplots.append(sub_C)
-            sub_C.plot(self.t, [self.calving_flux(Li) for Li in self.L], label="Total")
+            sub_C.plot(self.t, [self.calving_flux(Li) for Li in self.L], label="Total", c="black")
             sub_C.plot(self.t, [-self.c * self.water_depth(Li) * w * self.kappa * self.mean_ice_thickness(Li) for Li in self.L], "--", label="Front")
             sub_C.plot(self.t, [-self.c * self.water_depth(Li)**2. * w * self.rho_water / self.rho_ice for Li in self.L], "--", label="Float")
             if c == p:
@@ -347,12 +347,16 @@ class MinimumGlacierModel():
             # plt.close()
             pass
 
-    def print_parameters(self, header=False):
-        """ Shows the parameters of ice and calving """
-        if header:
-            print("|    alpha |     beta |       nu |        c |    kappa |")
-        print("| {:8.2f} | {:8.4f} | {:8.2f} | {:8.2f} | {:8.4f} |".format(self.alpha, self.beta, self.nu, self.c, self.kappa), self.name)
-        return (self.alpha, self.beta, self.nu, self.c, self.kappa)
+    def parameters(self, header=False, show=False):
+        """ Returns the parameters of ice and calving 
+        
+        alpha, beta, nu, c, kappa, w
+        """
+        if show:
+            if header:
+                print("|    alpha |     beta |       nu |        c |    kappa |        w |")
+            print("| {:8.2f} | {:8.4f} | {:8.2f} | {:8.2f} | {:8.4f} | {:8.2f}".format(self.alpha, self.beta, self.nu, self.c, self.kappa, self.w), self.name)
+        return (self.alpha, self.beta, self.nu, self.c, self.kappa, self.w)
 
     def data(self):
         """ Returns data:
@@ -404,7 +408,7 @@ class LinearBedModel(MinimumGlacierModel):
         self.y = self.bed(self.x)
 
     def __str__(self):
-        return "Minimum Glacier Model for a linear bed."
+        return "Minimum Glacier Model for a linear bed: {}".format(self.name)
 
     def bed(self, x):
         """ Returns the elevation of the bed at point x 
@@ -492,7 +496,7 @@ class ConcaveBedModel(MinimumGlacierModel):
         self.y = self.bed(self.x)
 
     def __str__(self):
-        return "Minimum Glacier Model for a concave bed."
+        return "Minimum Glacier Model for a concave bed: {}".format(self.name)
 
     def bed(self, x):
         """ Returns the elevation of the bed at point x 
@@ -587,7 +591,7 @@ class CustomBedModel(MinimumGlacierModel):
         self.ms = self.mean_slope_init()
 
     def __str__(self):
-        return "Minimum Glacier Model for a custom bed."
+        return "Minimum Glacier Model for a custom bed: {}".format(self.name)
 
     def bed(self, x):
         """ Returns the elevation of the bed at point x 
@@ -678,15 +682,17 @@ class CustomBedModel(MinimumGlacierModel):
 
 if __name__ == "__main__":
 
-    glacier_l = LinearBedModel()
-    glacier_l.print_parameters(header=True)
+    glacier_l = LinearBedModel(name="linear_test")
+    print(glacier_l)
+    glacier_l.parameters(header=True, show=True)
     glacier_l.integrate(0.5, 400., E=900)
     glacier_l.integrate(0.5, 400., E=800)
     glacier_l.integrate(0.5, 400., E=700)
     glacier_l.plot(E=True, C=True, V=True, show=False)
 
-    glacier_c = ConcaveBedModel()
-    glacier_c.print_parameters()
+    glacier_c = ConcaveBedModel(name="concave_test")
+    print(glacier_c)
+    glacier_c.parameters(show=True)
     glacier_c.integrate(0.5, 400., E=1200)
     glacier_c.integrate(0.5, 400., E=1100)
     glacier_c.integrate(0.5, 400., E=1000)
