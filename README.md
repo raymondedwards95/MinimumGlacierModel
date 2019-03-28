@@ -16,7 +16,7 @@ glacier = CustomBedModel(x, y)
 where the first line creates a model for a linear bed with maximum bed elevation `b0` and slope `s`, 
 the second line creates a model for an exponentially decreasing bed with top elevation `b0`, final elevation `ba` and length-scale `xl`
 and the third line creates a model for a custom bed given by two arrays `x` with x-coordinates and `y` with corresponding y-coordinates.
-Other parameters are for example `alpha`, `beta` and `nu` for ice parameters and `c` and `kappa` for calving parameters.
+Other parameters are for example the ice parameters `alpha`, `beta` and `nu` and the calving parameters `c` and `kappa`.
 
 The glacier can be simulated in time (using a Forward Euler scheme) by using
 ```
