@@ -1,6 +1,6 @@
 # MinimumGlacierModel
 
-Code for a Minimum Glacier Model (MGM). Here it is applied to the glacier Veteranen on Spitsbergen.
+Code for a Minimum Glacier Model (MGM), written for an assignment for the course _Ice and Climate_. Here, the model is applied to the glacier Veteranen on Spitsbergen.
 
 ## Usage
 First import the modules:
